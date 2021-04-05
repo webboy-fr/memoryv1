@@ -1,0 +1,25 @@
+body{
+    background-color: rgb(10, 195, 167);
+}
+
+h1 {
+    font-family:'Montserrat';
+}
+
+table#game td {
+     cursor:pointer;
+    width: 100px;
+    height: 100px;
+    padding: 0px;
+    background-repeat: no-repeat;    
+    border: solid 1px black;
+    border-collapse: collapse;
+}
+
+.progress{
+    height:auto !important;
+}
+
+#score{
+    display:none;
+}
