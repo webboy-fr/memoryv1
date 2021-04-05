@@ -1,5 +1,8 @@
 <?
 
+
+require_once 'env.php';
+
 class Score {
 
 
@@ -7,7 +10,7 @@ class Score {
 
     public function __construct(){
         try {
-            $this->db = new PDO("mysql:host=localhost; dbname=memory_v1;", 'root', '');
+            $this->db = new PDO("mysql:host=".DB_HOST."; dbname=".DB_NAME.";", DB_USER, DB_PASSWORD);
         } catch (PDOException $e) {
             echo "Erreur!: " . $e->getMessage() . "<br/>";
             die();
