@@ -1,33 +1,31 @@
 window.addEventListener('DOMContentLoaded', () => {
     
-
+    //La classe Grid permet de gérer la grille de jeu dans son ensemble
     class Grid {
 
         
-
+        //Liste des cartes disponibles
         fruits = ['pomme', 'banane', 'orange', 'citronVert', 'cranberry', 'abricot', 'citron', 'fraise',
             'pommeVerte', 'peche', 'raisin', 'pasteque', 'prune', 'poire', 'cerise', 'framboise',
             'mangue', 'mirabelles'
-        ];
+        ]; 
 
 
         cases = []; //Tableau recevant tous les objets "case"        
-        firstCard = null; //Mémorise la premirèe carte
+        firstCard = null; //Mémorise la première carte
         secondCard = null; //Mémorise la premirèe carte
-        removeCardTime = 500
-        progressBar;
-        #level = '';
+        removeCardTime = 500 //Timer pour ralentir les animations
+        progressBar; //Element progress bar du DOM
+        #level = ''; //Level (en privée)
 
-        //currentFruit;
+        
 
-        #gridSize = 0;
-        #nbrCase = 0;
+        #gridSize = 0; //Taille de la grille (ex : 6*6, 2*2). Calculé automatiquement en fonction du niveau
+        #nbrCase = 0; //Nombre total de case
         #timer = 0;
         timerInterval;
 
-        get nbrCase() {
-            return this.fruits.length * 2;
-        }
+       
 
 
         constructor(){
@@ -41,6 +39,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
         }
 
+        //Getter du champ privé #gridSize
+        get nbrCase() {
+            return this.fruits.length * 2;
+        }
+
+        //Getter du champ privé #gridSize
         get gridSize() {
             let grid = Math.sqrt(this.nbrCase);
             if(Number.isInteger(grid) == false){
@@ -51,9 +55,8 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         
-
-        getNbrFruits = () => {
-            //maxFruits = 18;
+        //Permet de déterminer le nombre de fruits a afficher en fonction du noiveau choisi
+        getNbrFruits = () => {            
             if(this.#level == 'facile') return 2;
             if(this.#level == 'moyen') return 8;
             if(this.#level == 'difficile') return 18;
@@ -66,11 +69,12 @@ window.addEventListener('DOMContentLoaded', () => {
         //On construit un tableau dynamiquement suivant le nombre de fuits disponible
         generateGrid = () => {
             let table = document.getElementById('game');
-            for (let row = 0; row < this.gridSize; row++) {
-                let tr = document.createElement('tr');
 
-                for (let col = 0; col < this.gridSize; col++) {
-                    let td = document.createElement('td');
+            for (let row = 0; row < this.gridSize; row++) { //Lignes
+                let tr = document.createElement('tr'); //On créé une ligne dans le tableau
+
+                for (let col = 0; col < this.gridSize; col++) { //Colonnes
+                    let td = document.createElement('td'); //On crée une cellule dans la ligne
 
                     //Sauvegarde de l'id d'une carte dans le DOM (seulement l'id)
                     td.id = `${row}${col}`;
@@ -79,16 +83,16 @@ window.addEventListener('DOMContentLoaded', () => {
                     //Mise en place de l'écouteur du click
                     td.addEventListener('click', (e, elem) => {
 
-                        //TODO FAIRE METHODE SEPAREES
+                        
                         //CARTE DEJA RETOURNEE
                         let card = this.findCase(td.id);
                         if(card.visible){
-                            console.error('impossible de clicker sur une carte déjà retrounée');
+                            console.error('impossible de clicker sur une carte déjà retorunée');
                             return
                         } 
                         
-                        //TODO FAIRE METHODE SEPAREES
-                        //PREMIERE CARTE
+                        
+                        //CHOIX PREMIERE CARTE
                         if (this.firstCard == null) {                            
                             //On charge la première carte clickée dans la proporiété firstcard
                             this.firstCard = card;   
@@ -97,19 +101,20 @@ window.addEventListener('DOMContentLoaded', () => {
                         }
 
 
-                        //TODO FAIRE METHODE SEPAREES
-                        //DEUXIEME CARTE
+                        //CHOIX DEUXIEME CARTE
                         if (this.secondCard == null) {   
 
                             if (td.id == this.firstCard.id) { //L'user clic sur la même carte
-                                console.error('IMPOSSIBLE'); //TODO
+                                console.error('IMPOSSIBLE'); //TODO 
                             } else { //L'user clic sur une autre carte
 
                                 //On charge la deuxième carte clickée dans la proporiété seconCard
                                 this.secondCard = card;
                                 this.secondCard.visible = true;
 
-                                if (this.firstCard.fruit == this.secondCard.fruit) {                                    
+                                //On regarde si les deux cartes ont le même nom   
+                                if (this.firstCard.fruit == this.secondCard.fruit) {                                  
+                                    //Ok paire trouvée !
 
                                     this.firstCard = null;
                                     this.secondCard = null;                              
@@ -120,25 +125,28 @@ window.addEventListener('DOMContentLoaded', () => {
 
                                     //Vérifie victoire
                                     if(this.win()){     
-                                        clearInterval(this.timerInterval);
-                                        document.getElementById('time').innerText = this.#timer;
+                                        //Ok, toutes les cartes sont visible, l'user a gagné
+                                        clearInterval(this.timerInterval); //On stop le timer
+                                        document.getElementById('time').innerText = this.#timer; //On mets à jour les élément duformulaire HTML
                                         document.getElementById('inputTime').value = this.#timer;
-                                        //document.getElementById('score').style.display = "block";
-
+                                        
+                                        //On affiche une modal Bootsrap pour enregistrer le score
                                         let myModal = new bootstrap.Modal(document.getElementById('modal'), {
                                             keyboard: false
-                                          })
-                                          myModal.show()
+                                        })
+                                        myModal.show()
 
                                     }
 
                                 } else {
+                                    //Perdu, c'est pas les même carte !
+                                    //On remet tout à zéro (firstCard et secondCard)
                                     setTimeout(() => {                                                        
                                         this.secondCard.visible = false;                                        
                                         this.firstCard.visible = false
                                         this.firstCard = null;
                                         this.secondCard = null;
-                                    }, this.removeCardTime);
+                                    }, this.removeCardTime); //Et on laisse 500ms pour pas que ça coup net
                                     
                                 }
                             }
@@ -153,8 +161,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
-            //Mise en place du chrono
-            //TODO METHODE A PART
+            //Mise en place du chrono            
             let caption = document.createElement('caption');            
             caption.innerText = this.#timer;
             caption.classList.add('fs-5');
@@ -165,8 +172,7 @@ window.addEventListener('DOMContentLoaded', () => {
             }, 1000)
 
 
-            //Mise en place de la progressbar
-            //TODO METHODE A PART
+            //Mise en place de la progressbar            
             let progress = document.createElement('div')
             progress.classList.add('progress', 'ms-auto', 'me-auto');
             progress.style.width = table.offsetWidth;
@@ -188,12 +194,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 //Cale les données sur l'objet en cours
                 caseGrid.fruit = this.fruits[randomFruit];
-                caseGrid.imgPosition = 0 - 100 * (randomFruit); //TODO Méthode spécialisées
+                caseGrid.imgPosition = 0 - 100 * (randomFruit); //permet de générer le position-y du sprite en fonction de l'index du fruit (i = 2 -> position = -200px)
                 caseGrid.visible = false;                
                 document.getElementById(caseGrid.id).style.backgroundPositionY = `${caseGrid.imgPosition}px`;                
             }
         }
 
+        //Génère un tableau aléatoire en mettant 2 occurence de chaque fruits à chaque fois
         getRandomAndFreeFruit = () => {
                 let randomFruit = 0;
                 let selectedFruit = '';
@@ -208,6 +215,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 return randomFruit
         }
 
+        //Trouve le nombre de fois qu'un fruit est présent dans le tableau
         checkNbrOccurence = (fruit = '') => {
             let cnt = 0;
             for (let caseGrid of this.cases) {
@@ -218,15 +226,17 @@ window.addEventListener('DOMContentLoaded', () => {
             return cnt;
         }
 
-
+        //Retourne une case (objet) en fonction de l'id stockée dans le DOM
         findCase = (id = '') => {           
             return this.cases.find(caseGrid => caseGrid.id == id)
         }
 
+        //Regarde si toutes les cartes sont a visible. Si c'est le cas, on retourne true
         win = () => {
             return this.cases.every((caseGrid) => caseGrid.visible === true)            
         }
 
+        //Permet de mettre à jour la progressbar
         progress = () => {
             let result = this.cases.filter((caseGrid) => caseGrid.visible === true);
             let goodCards = result.length;
@@ -239,11 +249,12 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    //La classe Case gère seulement les cases (sans les problématiques liées à la grille)
     class Case {
 
-        id = ''
-        fruit = '';
-        imgPosition = 0;
+        id = '' //On identifie une case via un id généré lors de la création de la grille (ligne/col -> i/j)
+        fruit = ''; //Le nom FR du fruit
+        imgPosition = 0; //PositionY pour le sprite
         #visible = false;
 
 
@@ -252,37 +263,44 @@ window.addEventListener('DOMContentLoaded', () => {
             this.id = `${x}${y}`;
         }
 
+        //Getter pour la propriété privé visible
         get visible() {
             return this.#visible
         }
 
+        //Setter pour la propriété privé visible (gère l'animation )
         set visible(visible) {            
             this.#visible = visible            
-            //document.getElementById(this.id).style.backgroundImage = (visible) ? "url('/cards.png')" : "url()"; //Mettre url en propriétés            
 
             if(visible){
-                document.getElementById(this.id).style.backgroundImage = "url('/cards.png')";
-                document.getElementById(this.id).classList.add('animate__animated', 'animate__flipInY');
+                document.getElementById(this.id).style.backgroundImage = "url('/cards.png')"; //On met à jour le background-img
+                document.getElementById(this.id).classList.add('animate__animated', 'animate__flipInY'); //On rajoute les classe Animate pour plus de plus (affiche recto)
             } else {
-                document.getElementById(this.id).classList.remove('animate__animated', 'animate__flipInY');
-                //document.getElementById(this.id).classList.add('animate__flipOutY');
-                document.getElementById(this.id).style.backgroundImage = "url()";                
+                document.getElementById(this.id).classList.remove('animate__animated', 'animate__flipInY'); //On enleve les classes animate (affiche verso)
+                document.getElementById(this.id).style.backgroundImage = "url()";
             }
             
         }
 
     }
 
-    document.getElementById('start').addEventListener('click',function() {
+
+    //Script de lancement hors classe
+    document.getElementById('start').addEventListener('click',function() { //Quand on clic sur le bouton
         this.style.display = 'none';
         document.getElementById('restart').classList.remove('d-none');
-        let grid = new Grid() //Mettre en static
-        grid.generateGrid();
-        grid.positionFruit();    
+        let grid = new Grid() //On lance la génération de la grille via l'instanciation d'un objet Grid (pourrait etre en static vue qu'on a qu'une seule grille (pas eu le temps de refactor))
+        grid.generateGrid(); //On génére la grille vide
+        grid.positionFruit(); //On positionne aléatoirement les fruits à l'intérieur
     })
 
-    document.getElementById('restart').addEventListener('click',function() {
-        location.reload();
+    document.getElementById('restart').addEventListener('click',function() { //Pas eu le temps, permet de recharger une nouvelle partie
+        location.reload(); // #bourrin :)
     })    
+
+    /**
+     * Merci d'avoir lu jusqu'au bout !
+     * Julien 
+     */
 
 })
